@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resume Job Matcher</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --secondary-color: #1e40af;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      min-height: 100vh;
+    }
+
+    .page {
+      display: none;
+    }
+    .active-page {
+      display: block;
+    }
+
+    .loading {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      width: 300px;
+      text-align: center;
+    }
+
+    .card-section {
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      padding: 2rem;
+      margin: 2rem auto;
+      max-width: 800px;
+    }
+
+    .skill-pill {
+      display: inline-block;
+      background: #e0f2fe;
+      color: #075985;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      margin: 0.25rem;
+      font-size: 0.9rem;
+    }
+
+    .header-bg {
+      background: var(--primary-color);
+      color: white;
+      padding: 3rem 0;
+      margin-bottom: 2rem;
+      border-radius: 0 0 30px 30px;
+    }
+
+    .filter-section {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .skill-checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <!-- Upload Page -->
+  <div id="upload-page" class="page active-page">
+    <div class="header-bg text-center">
+      <div class="container">
+        <h1 class="display-5 fw-bold mb-3">Smart Job Matcher</h1>
+        <p class="lead">Find your perfect job match in minutes</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card-section">
+        <h3 class="mb-4">Upload Your Resume</h3>
+        <form id="resume-form" onsubmit="handleResumeUpload(event)">
+          <div class="mb-4">
+            <label class="form-label fw-bold">PDF Resume</label>
+            <input
+              type="file"
+              class="form-control"
+              id="resume-upload"
+              accept=".pdf"
+              required
+            />
+          </div>
+          <button type="submit" class="btn btn-primary w-100 py-2">
+            Analyze Resume
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Role Selection Page -->
+  <div id="role-page" class="page">
+    <div class="header-bg text-center">
+      <div class="container">
+        <h2 class="display-6 fw-bold mb-3">Job Preferences</h2>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card-section">
+        <form id="role-form" onsubmit="handleJobSearch(event)">
+          <div class="filter-section">
+            <h5 class="mb-3">Job Roles</h5>
+            <div id="role-inputs">
+              <div class="mb-3">
+                <input
+                  type="text"
+                  class="form-control form-control-lg"
+                  placeholder="e.g. Software Engineer"
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm"
+              onclick="addRoleField()"
+            >
+              + Add Another Role
+            </button>
+          </div>
+
+          <div class="filter-section">
+            <h5 class="mb-3">Filters</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Date Posted</label>
+                <select class="form-select" id="date-filter">
+                  <option value="lastweek">Last Week</option>
+                  <option value="today">Today</option>
+                  <option value="lastthreedays">Last 3 Days</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Minimum Salary (£)</label>
+                <select class="form-select" id="salary-from">
+                  <option value="">Any</option>
+                  <option value="10000">10,000</option>
+                  <option value="20000">20,000</option>
+                  <option value="30000">30,000</option>
+                  <option value="40000">40,000</option>
+                  <option value="50000">50,000</option>
+                  <option value="60000">60,000</option>
+                  <option value="70000">70,000</option>
+                  <option value="80000">80,000</option>
+                  <option value="90000">90,000</option>
+                  <option value="100000">100,000+</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Maximum Salary (£)</label>
+                <select class="form-select" id="salary-to">
+                  <option value="">Any</option>
+                  <option value="20000">20,000</option>
+                  <option value="30000">30,000</option>
+                  <option value="40000">40,000</option>
+                  <option value="50000">50,000</option>
+                  <option value="60000">60,000</option>
+                  <option value="70000">70,000</option>
+                  <option value="80000">80,000</option>
+                  <option value="90000">90,000</option>
+                  <option value="100000">100,000+</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h5 class="mb-3">Select Key Skills</h5>
+            <div id="skills-list" class="d-flex flex-wrap gap-2"></div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100 py-2 mt-3">
+            Find Matching Jobs
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Page -->
+  <div id="results-page" class="page">
+    <div class="header-bg text-center">
+      <div class="container">
+        <h2 class="display-6 fw-bold mb-3">Your Best Matches</h2>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card-section">
+        <div id="job-summary" class="mb-3"></div>
+        <div id="results-table" class="table-responsive"></div>
+        <button class="btn btn-success w-100 mt-4" onclick="downloadJobsCSV()">
+          Download Full Results (CSV)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Indicator / Progress Overlay -->
+  <div id="loading" class="loading">
+    <div class="spinner-border text-primary mb-3" role="status"></div>
+    <div id="loading-text" class="fw-bold">Preparing...</div>
+
+    <!-- A simple progress bar -->
+    <div class="progress mt-3" style="height: 20px;">
+      <div
+        id="progress-bar"
+        class="progress-bar progress-bar-striped progress-bar-animated"
+        role="progressbar"
+        style="width: 0%;"
+      >
+        0%
+      </div>
+    </div>
+
+    <!-- Additional text lines for sub-stages or counters -->
+    <div class="mt-2 small text-muted" id="progress-details"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let extractedSkills = [];
+
+    // 1. Handle resume upload
+    async function handleResumeUpload(e) {
+      e.preventDefault();
+      const formData = new FormData();
+      const fileInput = document.getElementById("resume-upload");
+
+      showLoading("Analyzing your resume...", "Extracting text and skills");
+      formData.append("resume", fileInput.files[0]);
+
+      try {
+        const response = await fetch("http://localhost:8000/process-resume", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) throw new Error("Server error");
+        const data = await response.json();
+
+        extractedSkills = data.skills || [];
+        populateSkills();
+        showPage("role-page");
+      } catch (error) {
+        alert("Error: " + error.message);
+      } finally {
+        hideLoading();
+      }
+    }
+
+    // 2. Handle job search
+    async function handleJobSearch(e) {
+      e.preventDefault();
+
+      const roles = Array.from(document.querySelectorAll("#role-inputs input"))
+        .map((input) => input.value.trim())
+        .filter(Boolean);
+
+      const skills = Array.from(
+        document.querySelectorAll(".skill-checkbox:checked")
+      )
+        .map((checkbox) => checkbox.value)
+        .slice(0, 5);
+
+      const filters = {
+        date: document.getElementById("date-filter").value,
+        salaryFrom: document.getElementById("salary-from").value,
+        salaryTo: document.getElementById("salary-to").value,
+      };
+
+      // Kick off the visible progress
+      showLoading("Searching job listings...", "Stage 1 of 3");
+      startSimulatedProgress();
+
+      try {
+        const response = await fetch("http://localhost:8000/find-jobs", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            roles,
+            skills,
+            filters,
+          }),
+        });
+
+        if (!response.ok) throw new Error("Job search failed");
+        const data = await response.json();
+
+        const topMatches = data.topMatches || [];
+        const totalJobs = data.totalJobs || 0;
+
+        if (topMatches.length === 0) {
+          document.getElementById("job-summary").innerHTML = `
+            <div class="alert alert-warning" role="alert">
+              No jobs found for your search. Try different roles or skills.
+            </div>
+          `;
+          document.getElementById("results-table").innerHTML = "";
+        } else {
+          document.getElementById("job-summary").innerHTML = `
+            <p class="fw-bold">
+              We found ${totalJobs} job(s) across all queries. 
+              Showing top ${Math.min(topMatches.length, 50)} result(s):
+            </p>
+          `;
+          showResults(topMatches);
+        }
+
+        showPage("results-page");
+      } catch (error) {
+        alert("Error: " + error.message);
+      } finally {
+        stopSimulatedProgress();
+        hideLoading();
+      }
+    }
+
+    // 3. Show results
+    function showResults(jobs) {
+      const resultsHTML = `
+        <div class="row g-4">
+          ${jobs
+            .map(
+              (job) => `
+            <div class="col-12">
+              <div class="card p-3 mb-3">
+                <div class="row">
+                  <div class="col-md-8">
+                    <h5>${job.Title || "N/A"}</h5>
+                    <p class="text-muted">${job.Company || "N/A"}</p>
+                    <div class="d-flex gap-2 mb-2">
+                      <span class="badge bg-primary">
+                        Match: ${Math.round((job.SimilarityScore || 0) * 100)}%
+                      </span>
+                      ${
+                        job.Salary
+                          ? `<span class="badge bg-success">${job.Salary}</span>`
+                          : ""
+                      }
+                    </div>
+
+                    ${
+                      job.MissingKeywords?.length
+                        ? `
+                        <div class="mb-2">
+                          <small class="text-muted">Suggested skills:</small>
+                          <div class="d-flex flex-wrap gap-1">
+                            ${job.MissingKeywords.slice(0, 5).map((skill) => `
+                              <span class="skill-pill">${skill}</span>
+                            `).join("")}
+
+                            ${
+                              job.MissingKeywords.length > 5
+                                ? `
+                                  <div class="collapse" id="more-${job.Link}">
+                                    ${job.MissingKeywords.slice(5).map((skill) => `
+                                      <span class="skill-pill">${skill}</span>
+                                    `).join("")}
+                                  </div>
+                                  <button 
+                                    type="button" 
+                                    class="btn btn-link skill-pill" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#more-${job.Link}"
+                                    onclick="this.textContent = this.textContent.includes('More') ? 'See Less' : 'See More'"
+                                  >
+                                    +${job.MissingKeywords.length - 5} More
+                                  </button>
+                                `
+                                : ''
+                            }
+                          </div>
+                        </div>`
+                        : ''
+                    }
+
+                    ${
+                      job.ResumeSuggestions
+                        ? `<p class="mt-2"><strong>Resume Tips:</strong> ${job.ResumeSuggestions}</p>`
+                        : ''
+                    }
+                    ${
+                      job.ApplicationTips
+                        ? `<p class="mt-2"><strong>Application Strategy:</strong> ${job.ApplicationTips}</p>`
+                        : ''
+                    }
+                  </div>
+                  <div class="col-md-4 text-end">
+                    ${
+                      job.Link
+                        ? `
+                      <a
+                        href="${job.Link}"
+                        target="_blank"
+                        class="btn btn-outline-primary"
+                      >
+                        View Details
+                      </a>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      `;
+      document.getElementById("results-table").innerHTML = resultsHTML;
+    }
+
+    // 4. Populate skills checkboxes
+    function populateSkills() {
+      const container = document.getElementById("skills-list");
+      container.innerHTML = extractedSkills
+        .map(
+          (skill) => `
+          <div class="form-check">
+            <input
+              class="form-check-input skill-checkbox"
+              type="checkbox"
+              value="${skill}"
+              id="skill-${skill}"
+            />
+            <label class="form-check-label skill-checkbox-label" for="skill-${skill}">
+              <span class="skill-pill">${skill}</span>
+            </label>
+          </div>
+        `
+        )
+        .join("");
+    }
+
+    // 5. Add role field
+    function addRoleField() {
+      const roleInputs = document.getElementById("role-inputs");
+      if (roleInputs.children.length < 2) {
+        const newInput = document.createElement("div");
+        newInput.className = "mb-3";
+        newInput.innerHTML = `
+          <input 
+            type="text" 
+            class="form-control form-control-lg"
+            placeholder="Enter job role"
+            required
+          >
+        `;
+        roleInputs.appendChild(newInput);
+      }
+    }
+
+    // 6. Page navigation
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach((page) => {
+        page.classList.remove("active-page");
+      });
+      document.getElementById(pageId).classList.add("active-page");
+    }
+
+    // 7. CSV download
+    function downloadJobsCSV() {
+      window.location.href = "http://localhost:8000/download-jobs";
+    }
+
+    // Loading & progress
+    let progressInterval = null;
+    let currentProgress = 0;
+    let stage = 0;
+    const stages = [
+      { label: "Searching job listings...", duration: 5000 },
+      { label: "Scraping descriptions...", duration: 5000 },
+      { label: "Analyzing matches...", duration: 5000 }
+    ];
+
+    function showLoading(text, subtext = "") {
+      document.getElementById("loading-text").textContent = text;
+      document.getElementById("progress-details").textContent = subtext;
+      document.getElementById("progress-bar").style.width = "0%";
+      document.getElementById("progress-bar").textContent = "0%";
+      currentProgress = 0;
+      stage = 0;
+      document.getElementById("loading").style.display = "block";
+    }
+    function hideLoading() {
+      document.getElementById("loading").style.display = "none";
+    }
+
+    // A naive approach: run through 3 "stages" of ~5 seconds each,
+    // incrementing the progress bar from 0% -> 100% over 15 seconds.
+    // The final .then or .catch sets progress to 100% once the request finishes.
+    function startSimulatedProgress() {
+      // Cleanup any previous interval
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+
+      stage = 0;
+      currentProgress = 0;
+      document.getElementById("progress-details").textContent = "Stage 1 of 3";
+
+      progressInterval = setInterval(() => {
+        currentProgress += 1;
+
+        // If we crossed a boundary of a stage, update label
+        const totalStages = stages.length;
+        const segment = Math.floor(100 / totalStages); // ~33%
+        let stageIndex = Math.min(Math.floor(currentProgress / segment), totalStages - 1);
+
+        // Update main text label
+        document.getElementById("loading-text").textContent = stages[stageIndex].label;
+
+        // Possibly update subtext
+        document.getElementById("progress-details").textContent =
+          `Stage ${stageIndex + 1} of ${totalStages}`;
+
+        // Update bar
+        const barElem = document.getElementById("progress-bar");
+        barElem.style.width = currentProgress + "%";
+        barElem.textContent = currentProgress + "%";
+
+        // If we've reached or exceeded 99%, stop
+        if (currentProgress >= 99) {
+          clearInterval(progressInterval);
+          progressInterval = null;
+        }
+      }, 150); // 150ms increments => ~15s total (100 * 150ms = 15s)
+    }
+
+    function stopSimulatedProgress() {
+      // Immediately set progress to 100%
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
+      const barElem = document.getElementById("progress-bar");
+      barElem.style.width = "100%";
+      barElem.textContent = "100%";
+    }
+  </script>
+</body>
+</html>

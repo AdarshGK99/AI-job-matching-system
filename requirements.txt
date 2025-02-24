@@ -1,0 +1,11 @@
+
+pandas
+nltk
+PyPDF2
+pyresparser
+torch
+sentence-transformers
+scikit-learn
+playwright
+google-generativeai
+numpy
