@@ -114,7 +114,7 @@ Example:
   }}
 ]
 """
-        model_obj = genai.GenerativeModel("gemini-pro")
+        model_obj = genai.GenerativeModel("gemini-2.0-flash")
         response = model_obj.generate_content(prompt)
 
         if response:
